@@ -2816,3 +2816,63 @@ void tonex_value_changed(lv_event_t* e)
     lv_obj_add_flag(objects.ui_settings_dialog, LV_OBJ_FLAG_HIDDEN);
 #endif    //CONFIG_TONEX_CONTROLLER_DISPLAY_FULL_UI
 }
+#if TONEX_UI_800X480
+static void tonex_preset_slot_changed(lv_event_t* e)
+{
+    control_set_config_item_int(CONFIG_ITEM_SAVE_PRESET_TO_SLOT, lv_dropdown_get_selected(lv_event_get_target(e)));
+    control_save_user_data(0);
+
+    // The slot and dual/stomp mode only reach the pedal with a preset load, so reload the current preset. It goes
+    // through the control queue after the config change. Skipped with Toggle Bypass on, where a reload toggles bypass
+    if (control_get_config_item_int(CONFIG_ITEM_TOGGLE_BYPASS) == 0)
+    {
+        uint8_t* order = control_get_preset_order();
+        uint32_t preset = control_get_current_preset_index();
+
+        for (uint8_t index = 0; index < MAX_SUPPORTED_PRESETS; index++)
+        {
+            if (order[index] == preset)
+            {
+                control_request_preset_index(index);
+                break;
+            }
+        }
+    }
+}
+
+void tonex_add_preset_slot_setting(void)
+{
+    // Created here rather than in the EEZ project so regenerating screens.c doesn't drop it. Placed beside
+    // Dir Monitor, the only free spot on the Glob tab
+    const char* label_text = "Preset Slot";
+    const lv_coord_t dropdown_x = 543;
+    lv_point_t label_size;
+
+    // Same 20 px gap as the Dir Monitor label to its switch
+    lv_txt_get_size(&label_size, label_text, &lv_font_montserrat_24, 0, 0, LV_COORD_MAX, LV_TEXT_FLAG_NONE);
+
+    lv_obj_t* label = lv_label_create(objects.ui_global_tab);
+    lv_obj_set_pos(label, dropdown_x - 20 - label_size.x, -92);
+    lv_obj_set_size(label, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+    lv_obj_set_style_text_font(label, &lv_font_montserrat_24, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_align(label, LV_ALIGN_LEFT_MID, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_label_set_text_static(label, label_text);
+
+    lv_obj_t* dropdown = lv_dropdown_create(objects.ui_global_tab);
+    lv_obj_set_pos(dropdown, dropdown_x, -92);
+    lv_obj_set_size(dropdown, 202, LV_SIZE_CONTENT);
+    lv_obj_set_style_align(dropdown, LV_ALIGN_LEFT_MID, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_dropdown_set_options_static(dropdown, "Current\nA (Dual)\nB (Dual)\nC (Stomp)");
+    lv_dropdown_set_selected(dropdown, control_get_config_item_int(CONFIG_ITEM_SAVE_PRESET_TO_SLOT));
+    lv_obj_set_style_bg_color(dropdown, lv_color_hex(0x1f1f1f), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(dropdown, &lv_font_montserrat_24, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    lv_obj_t* list = lv_dropdown_get_list(dropdown);
+    lv_obj_set_style_bg_color(list, lv_color_hex(0x1f1f1f), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(list, &lv_font_montserrat_24, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(list, lv_color_hex(0x513d2b), LV_PART_SELECTED | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(list, lv_color_hex(0x513d2b), LV_PART_SELECTED | LV_STATE_CHECKED);
+
+    lv_obj_add_event_cb(dropdown, tonex_preset_slot_changed, LV_EVENT_VALUE_CHANGED, NULL);
+}
+#endif  // TONEX_UI_800X480

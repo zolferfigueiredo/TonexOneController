@@ -1948,6 +1948,10 @@ void display_init(i2c_master_bus_handle_t bus_handle, SemaphoreHandle_t I2CMutex
     ESP_LOGI(TAG, "Init UI");
     ui_init();
 
+#if TONEX_UI_800X480
+    tonex_add_preset_slot_setting();
+#endif
+
     // init mem
     memset((void*)&msgbox_data, 0, sizeof(msgbox_data));
 

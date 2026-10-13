@@ -24,6 +24,10 @@ extern "C" {
 
 #include "lvgl.h"
 
+// Boards built with ui_generated_800x480land (see main/CMakeLists.txt)
+#define TONEX_UI_800X480    (CONFIG_TONEX_CONTROLLER_HARDWARE_PLATFORM_WAVESHARE_43B || CONFIG_TONEX_CONTROLLER_HARDWARE_PLATFORM_WAVESHARE_43DEVONLY || \
+                             CONFIG_TONEX_CONTROLLER_HARDWARE_PLATFORM_JC4880P4 || CONFIG_TONEX_CONTROLLER_HARDWARE_PLATFORM_WAVESHARE_7B)
+
 void tonex_show_settings_tab(lv_event_t* e);
 void tonex_action_effect_icon_clicked(lv_event_t* e);
 void tonex_action_parameter_changed(lv_event_t* e);
@@ -31,6 +35,10 @@ void tonex_update_icon_order(void);
 uint8_t tonex_update_ui_parameters(void);
 void tonex_value_clicked(lv_event_t *e);
 void tonex_value_changed(lv_event_t * e);
+
+#if TONEX_UI_800X480
+void tonex_add_preset_slot_setting(void);
+#endif
 
 #ifdef __cplusplus
 } /*extern "C"*/
